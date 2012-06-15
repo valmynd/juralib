@@ -46,5 +46,6 @@ def fetch():
 			for link in element.xpath("//h2//a[%s]" % nopdf):
 				write_html(current_url+"/"+link.attrib["href"], short_name)
 
-#write_html("http://www.gesetze-im-internet.de/alg/BJNR189100994.html", "alg")
+#write_html("http://www.gesetze-im-internet.de/alg/BJNR189100994.html", "alg") # contains tables
+#write_html("http://www.gesetze-im-internet.de/bgb/BJNR001950896.html", "bgb")
 fetch()
