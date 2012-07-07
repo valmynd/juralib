@@ -4,6 +4,9 @@ from lxml import etree, html
 from os import path, system
 from xml.dom import minidom
 
+from zipfile import ZipFile, BadZipfile
+from StringIO import StringIO
+
 __author__ = "C.Wilhelm"
 __license__ = "AGPL v3"
 
@@ -25,26 +28,37 @@ def write_html(url, filename):
 	write_markdown(	url='tmp/'+filename,
 					filename='tmp/'+filename)
 
+def write_xml(url, filename):
+	remotefile = urlopen(url)
+	memoryfile = StringIO(remotefile.read())
+	# using remotefile directly would cause AttributeError: addinfourl instance has no attribute 'seek'
+	zipfile = ZipFile(memoryfile)
+	zipfile.extractall(path="tmp/%s/" % filename)
+	zipfile.close()
+
 def write_markdown(url, filename):
-	system("pandoc -s -r html %s -o %s.md" % (url, filename))
+	system("pandoc --atx-headers -s -r html %s -o %s.md" % (url, filename))
 
 def fetch():
 	uri = "http://www.gesetze-im-internet.de/"
-	nopdf = "substring(@href, string-length(@href)-3)!='.pdf'" # lxml supports XPath 1.0
 	content = urlopen(uri+"aktuell.html").read()
 	element = html.fromstring(content)
 	for link in element.xpath("//a[@class = 'alphabet']"):
 		content = urlopen(uri+link.attrib["href"]).read()
 		element = html.fromstring(content)
-		for link in element.xpath("//*[@id = 'container']//a[%s]" % nopdf):
+		xpath_nopdf = "substring(@href, string-length(@href)-3)!='.pdf'" # lxml supports XPath 1.0
+		for link in element.xpath("//*[@id = 'container']//a[%s]" % xpath_nopdf):
 			response = urlopen(uri+link.attrib["href"])
 			element = html.fromstring(response.read())
 			current_url = path.dirname(response.geturl())
 			short_name = path.split(current_url)[-1]#.strip("-_123456789")
-			for link in element.xpath("//h2//a[%s]" % nopdf):
-				write_html(current_url+"/"+link.attrib["href"], short_name)
+			xpath_xmlonly = "substring(@href, string-length(@href)-3)='.zip'"
+			for link in element.xpath("//h2//a[%s]" % xpath_xmlonly):
+				write_xml(current_url+"/"+link.attrib["href"], filename=short_name)
 
-write_html("http://www.gesetze-im-internet.de/alg/BJNR189100994.html", "alg") # contains tables
-write_html("http://www.gesetze-im-internet.de/bgb/BJNR001950896.html", "bgb")
-write_html("http://www.gesetze-im-internet.de/bgb/BJNR001950896.html", "hgb")
+write_xml("http://www.gesetze-im-internet.de/alg/xml.zip", "alg") # contains tables
+write_xml("http://www.gesetze-im-internet.de/bgb/xml.zip", "bgb")
+write_xml("http://www.gesetze-im-internet.de/hgb/xml.zip", "hgb")
+write_xml("http://www.gesetze-im-internet.de/gmbhg/xml.zip", "gmbhg")
+write_xml("http://www.gesetze-im-internet.de/aktg/xml.zip", "aktg")
 #fetch()
