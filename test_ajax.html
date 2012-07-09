@@ -2,10 +2,6 @@
 <head>
 <meta content="text/html;charset=utf-8" http-equiv="content-type"/>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-</head>
-<body>
-<a id="link" href="#">Click here</a>
-<b id="in"></b>
 <script type="text/javascript">
 
 /* jQuery XPath wrapper based on a script written by John Firebaugh (MIT licensed) */
@@ -30,17 +26,48 @@ var xp = function (xpath, contextNode, rootDocument) {
 	}
 })(jQuery);
 
-$.xpath("//a[@href='#']").click(function() {
-	$.get('tmp/index.xml', function(data) {
-		$.each(xp("//keyword[text()='" + "BGB" + "']/../../filename", data, data), function (i, v) {
-			//alert(v.tagName);
-			//alert($(v).text());
-			$.get('tmp/' + $(v).text(), function(data) {
-				console.log(data);
+jQuery(document).ready(function($) {
+	var html = $("body").html().replace(/(Art\.|§§|§)(\W*[0-9]+\W*(ff\.|f\.)?\W*[,]?\W*)+[A-Z][A-Za-z]+/g, function(data, w, e, r){
+		// ein	? nach [...] heißt	optional, 0...1
+		//		*					optional, 0...unendlich
+		//		+					zwingend, 1...unendlich
+		// \W heißt beliebiges whitespace, \W* sind beliebig viele whitespaces
+		// das g am Ende heißt, dass es nicht nur für den ersten Fund ersetzt wird
+		// ^ ist umkehroperator, z.B. ^\d ist alles außer Zahlen
+		console.log(data, w, e, r);
+		return '<div class="paragraph">' + data + '</div>';
+	});
+	$("body").html(html);
+	$(".paragraph").hover(function(){
+		var p = $(this).text();
+		var numbers = p.match(/[0-9]+/g);
+		var names = p.match(/[A-Z][A-Za-z]+/g), law = names[names.length-1];
+		//console.log(numbers, law);
+		$.get('tmp/index.xml', function(data) {
+			$.each(xp("//keyword[text()='" + law + "']/../../filename", data, data), function (i, v) {
+				$.get('tmp/' + $(v).text(), function(data) {
+					//console.log($(data).text());
+					find_p(data, numbers);
+				});
 			});
 		});
 	});
 });
+
+var find_p = function (data, paragraphs) {
+	$.each(paragraphs, function(i,v) {
+		console.log("//enbez[text()='§ " + v + "']");
+		$.each(xp("//enbez[text()='§ " + v + "']/../../textdaten", data, data), function (i, v) {
+			console.log($(v).text());
+		});
+	});
+};
+
 </script>
+</head>
+<body>
+Ist verboten, s. Art.100 ff. BGB.
+Ist verboten, s. §§ 100f.,101 BGB.
+<b id="in"></b>
 </body>
 </html>
