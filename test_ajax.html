@@ -26,27 +26,34 @@ var xp = function (xpath, contextNode, rootDocument) {
 	}
 })(jQuery);
 
-jQuery(document).ready(function($) {
-	var html = $("body").html().replace(/(Art\.|§§|§)(\W*[0-9]+\W*(ff\.|f\.)?\W*[,]?\W*)+[A-Z][A-Za-z]+/g, function(data, w, e, r){
-		// ein	? nach [...] heißt	optional, 0...1
-		//		*					optional, 0...unendlich
-		//		+					zwingend, 1...unendlich
-		// \W heißt beliebiges whitespace, \W* sind beliebig viele whitespaces
-		// das g am Ende heißt, dass es nicht nur für den ersten Fund ersetzt wird
-		// ^ ist umkehroperator, z.B. ^\d ist alles außer Zahlen
-		console.log(data, w, e, r);
-		return '<div class="paragraph">' + data + '</div>';
+/* Paragraph/Artikel in XML finden und HTML generieren */
+var find_p = function (data, paragraphs) {
+	var str = "";
+	$.each(paragraphs, function(i,v) {
+		// console.log("//enbez[text()='§ " + v + "']");
+		$.each(xp("//enbez[text()='§ " + v + "']/../../textdaten", data, data), function (j, txt) {
+			str += "§ " + v + "<br />"
+			str += $(txt).text()
+			str += "<br/><br/>";
+		});
 	});
-	$("body").html(html);
+	$("#in").html(str);
+};
+
+/* wenn Maus über ein Gesetzes-Zitat fährt, veranlassen dass die entsprechenden Paragraphen angezeigt werden */
+jQuery(document).ready(function($) {
+	$("body").html(
+		$("body").html().replace(/(Art\.|§§|§)(\W*[0-9]+\W*(ff\.|f\.)?\W*[,]?\W*)+[A-Z][A-Za-z]+/g, function(data){
+			return '<span class="paragraph">' + data + '</span>';
+		})
+	);
 	$(".paragraph").hover(function(){
 		var p = $(this).text();
 		var numbers = p.match(/[0-9]+/g);
 		var names = p.match(/[A-Z][A-Za-z]+/g), law = names[names.length-1];
-		//console.log(numbers, law);
 		$.get('tmp/index.xml', function(data) {
 			$.each(xp("//keyword[text()='" + law + "']/../../filename", data, data), function (i, v) {
 				$.get('tmp/' + $(v).text(), function(data) {
-					//console.log($(data).text());
 					find_p(data, numbers);
 				});
 			});
@@ -54,20 +61,12 @@ jQuery(document).ready(function($) {
 	});
 });
 
-var find_p = function (data, paragraphs) {
-	$.each(paragraphs, function(i,v) {
-		console.log("//enbez[text()='§ " + v + "']");
-		$.each(xp("//enbez[text()='§ " + v + "']/../../textdaten", data, data), function (i, v) {
-			console.log($(v).text());
-		});
-	});
-};
-
 </script>
 </head>
 <body>
 Ist verboten, s. Art.100 ff. BGB.
 Ist verboten, s. §§ 100f.,101 BGB.
-<b id="in"></b>
+<br />
+<div id="in" style="border-style:solid;border-width:1px;"></div>
 </body>
 </html>

@@ -63,7 +63,6 @@ def index():
 				keywords.update(firstnorm.xpath("metadaten/amtabk/text()"))
 				titles.update(firstnorm.xpath("metadaten/langue/text()"))
 				titles.update(firstnorm.xpath("metadaten/titel/text()"))
-				keywords.update(titles)
 				assert(len(titles) == 1) # didn't occur yet, would need to be handled
 				law = etree.SubElement(laws, "law")
 				etree.SubElement(law, "title").text = titles.pop()
