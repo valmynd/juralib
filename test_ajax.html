@@ -1,0 +1,46 @@
+<html>
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="content-type"/>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+</head>
+<body>
+<a id="link" href="#">Click here</a>
+<b id="in"></b>
+<script type="text/javascript">
+
+/* jQuery XPath wrapper based on a script written by John Firebaugh (MIT licensed) */
+var xp = function (xpath, contextNode, rootDocument) {
+	if (!rootDocument) rootDocument = document;
+	var iterator = rootDocument.evaluate(xpath, contextNode, null, XPathResult.ANY_TYPE, null);
+	var item, nodes = [];
+	while (item = iterator.iterateNext())
+		nodes.push(item);
+	return nodes;
+};
+(function ($) {
+	$.xpath = function (xpath) {
+		return $(xp(xpath, document));
+	}
+	$.fn.xpath = function (xpath) {
+		var nodes = [];
+		this.each(function () {
+			nodes.push.apply(nodes, xp(xpath, this));
+		});
+		return this.pushStack(nodes, "xpath", xpath);
+	}
+})(jQuery);
+
+$.xpath("//a[@href='#']").click(function() {
+	$.get('tmp/index.xml', function(data) {
+		$.each(xp("//keyword[text()='" + "BGB" + "']/../../filename", data, data), function (i, v) {
+			//alert(v.tagName);
+			//alert($(v).text());
+			$.get('tmp/' + $(v).text(), function(data) {
+				console.log(data);
+			});
+		});
+	});
+});
+</script>
+</body>
+</html>
