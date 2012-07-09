@@ -31,20 +31,6 @@ var xp = function(xpath, contextNode, rootDocument) {
 	}
 })(jQuery);
 
-/* Paragraph/Artikel in XML finden und HTML generieren */
-var find_p = function(data, paragraphs) {
-	var str = "";
-	$.each(paragraphs, function(i,v) {
-		// console.log("//enbez[text()='§ " + v + "']");
-		$.each(xp("//enbez[text()='§ " + v + "']/../../textdaten", data, data), function(j, txt) {
-			str += "§ " + v + "<br />"
-			str += $(txt).text()
-			str += "<br/><br/>";
-		});
-	});
-	$("#in").html(str);
-};
-
 /* Römische Zahlen finden und dersetzen, z.B. I -> Abs. 1 */
 function deromanize(roman) {
 	// source: http://blog.stevenlevithan.com/archives/javascript-roman-numeral-converter
@@ -68,20 +54,55 @@ var replace_roman_letters = function (str) {
 /* veranlassen, dass die entsprechenden Paragraphen angezeigt werden, wenn Maus über ein Gesetzes-Zitat fährt */
 jQuery(document).ready(function($) {
 	$("body").html($("body").html().replace(/(Art\.|§§|§)(\W*[0-9]+\W*[IVXL]*\W*(ff\.|f\.|Abs\.|Absatz|S\.|Satz|Nr\.|Nummer)*\W*[,]?\W*)+[A-Z][A-Za-z]+/g, function(data){
+		//console.log(data);
 		return '<span class="paragraph">' + data + '</span>';
 	}));
 	$(".paragraph").hover(function(){
-		var p = replace_roman_letters($(this).text());
-		console.log(p);
-		var numbers = p.match(/[0-9]+/g);
-		var names = p.match(/[A-Z][A-Za-z]+/g);
-		var law = names[names.length-1].toLowerCase();
+		var txt = replace_roman_letters($(this).text());
+		var namen = txt.match(/[A-Z][A-Za-z]+/g);
+		var gesetz = namen[namen.length-1];
+		var paragraphen = [];
+		$.each(txt.split(","), function(i, p) {
+			var paragraph = {paragraph:null, absatz: null, satz: null, nummer: null, folgende: false};
+			p = p.replace(/(Art\.|§§|§)/, "");
+			p = p.replace(/(Abs\.|Absatz)\W*[0-9]+/g, function(str){
+				paragraph.absatz = str.match(/[0-9]+/g)[0];
+				return '';
+			});
+			p = p.replace(/(S\.|Satz)\W*[0-9]+/g, function(str){
+				paragraph.satz = str.match(/[0-9]+/g)[0];
+				return '';
+			});
+			p = p.replace(/(Nr\.|Nummer)\W*[0-9]+/g, function(str){
+				paragraph.nummer = str.match(/[0-9]+/g)[0];
+				return '';
+			});
+			paragraph.paragraph = p.match(/[0-9]+/g)[0];
+			paragraph.folgende = /ff\.|f\./.test(p);
+			paragraphen.push(paragraph);
+			//console.log(p, paragraph); // there shouldn't be much left
+		});
 		$.get('tmp/index.xml', function(data) {
-			$.each(xp("//keyword[text()='" + law + "']/../../filename", data, data), function(i, v) {
+			$.each(xp("//keyword[text()='" + gesetz.toLowerCase() + "']/../../filename", data, data), function(i, v) {
 				$.get('tmp/' + $(v).text(), function(data) {
-					find_p(data, numbers);
+					find_p(data, paragraphen);
 				});
 			});
 		});
 	});
 });
+
+
+/* Paragraph/Artikel in XML finden und HTML generieren */
+var find_p = function(data, paragraphs) {
+	var str = "";
+	$.each(paragraphs, function(i,v) {
+		console.log("//enbez[text()='§ " + v.paragraph + "']");
+		$.each(xp("//enbez[text()='§ " + v.paragraph + "']/../../textdaten", data, data), function(j, txt) {
+			str += "§ " + v.paragraph + "<br />"
+			str += $(txt).text()
+			str += "<br/><br/>";
+		});
+	});
+	$("#in").html(str);
+};
