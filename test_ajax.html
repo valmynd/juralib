@@ -2,70 +2,11 @@
 <head>
 <meta content="text/html;charset=utf-8" http-equiv="content-type"/>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-<script type="text/javascript">
-
-/* jQuery XPath wrapper based on a script written by John Firebaugh (MIT licensed) */
-var xp = function (xpath, contextNode, rootDocument) {
-	if (!rootDocument) rootDocument = document;
-	var iterator = rootDocument.evaluate(xpath, contextNode, null, XPathResult.ANY_TYPE, null);
-	var item, nodes = [];
-	while (item = iterator.iterateNext())
-		nodes.push(item);
-	return nodes;
-};
-(function ($) {
-	$.xpath = function (xpath) {
-		return $(xp(xpath, document));
-	}
-	$.fn.xpath = function (xpath) {
-		var nodes = [];
-		this.each(function () {
-			nodes.push.apply(nodes, xp(xpath, this));
-		});
-		return this.pushStack(nodes, "xpath", xpath);
-	}
-})(jQuery);
-
-/* Paragraph/Artikel in XML finden und HTML generieren */
-var find_p = function (data, paragraphs) {
-	var str = "";
-	$.each(paragraphs, function(i,v) {
-		// console.log("//enbez[text()='§ " + v + "']");
-		$.each(xp("//enbez[text()='§ " + v + "']/../../textdaten", data, data), function (j, txt) {
-			str += "§ " + v + "<br />"
-			str += $(txt).text()
-			str += "<br/><br/>";
-		});
-	});
-	$("#in").html(str);
-};
-
-/* wenn Maus über ein Gesetzes-Zitat fährt, veranlassen dass die entsprechenden Paragraphen angezeigt werden */
-jQuery(document).ready(function($) {
-	$("body").html(
-		$("body").html().replace(/(Art\.|§§|§)(\W*[0-9]+\W*(ff\.|f\.)?\W*[,]?\W*)+[A-Z][A-Za-z]+/g, function(data){
-			return '<span class="paragraph">' + data + '</span>';
-		})
-	);
-	$(".paragraph").hover(function(){
-		var p = $(this).text();
-		var numbers = p.match(/[0-9]+/g);
-		var names = p.match(/[A-Z][A-Za-z]+/g), law = names[names.length-1];
-		$.get('tmp/index.xml', function(data) {
-			$.each(xp("//keyword[text()='" + law + "']/../../filename", data, data), function (i, v) {
-				$.get('tmp/' + $(v).text(), function(data) {
-					find_p(data, numbers);
-				});
-			});
-		});
-	});
-});
-
-</script>
+<script type="text/javascript" src="jura.js"></script>
 </head>
 <body>
-Ist verboten, s. Art.100 ff. BGB.
-Ist verboten, s. §§ 100f.,101 BGB.
+Ist verboten, s. Art.100 ff. HGB.
+Ist verboten, s. §§ 29f.,28 GmbHG.
 <br />
 <div id="in" style="border-style:solid;border-width:1px;"></div>
 </body>

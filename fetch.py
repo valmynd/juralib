@@ -59,8 +59,8 @@ def index():
 				# <!ELEMENT dokumente (norm*)> # Regelfall: erste "Norm" enthält Metadaten für Gesamtdokument, zweite "Norm" enthält Inhaltsverzeichnis
 				firstnorm = dokumente.find("norm")
 				# <!ELEMENT metadaten (jurabk+, amtabk?, ausfertigung-datum?, fundstelle*, kurzue?, langue?, gliederungseinheit?, enbez?, titel?, standangabe*)>
-				keywords.update(firstnorm.xpath("metadaten/jurabk/text()"))
-				keywords.update(firstnorm.xpath("metadaten/amtabk/text()"))
+				keywords.update(k.lower() for k in firstnorm.xpath("metadaten/jurabk/text()"))
+				keywords.update(k.lower() for k in firstnorm.xpath("metadaten/amtabk/text()"))
 				titles.update(firstnorm.xpath("metadaten/langue/text()"))
 				titles.update(firstnorm.xpath("metadaten/titel/text()"))
 				assert(len(titles) == 1) # didn't occur yet, would need to be handled
