@@ -40,8 +40,6 @@ def fetch():
 
 def index():
 	"extract metadata for all fetched xml files in ./tmp/"
-	# structure: title | filename | [keyword1,keyword2,title]
-	# example: ./tmp/alg/BJNR189100994.xml | [ALG]
 	dtd = etree.DTD("gii-norm.dtd")
 	laws = etree.Element("laws")
 	for name in listdir("./tmp/"):
