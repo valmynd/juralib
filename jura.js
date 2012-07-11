@@ -52,7 +52,7 @@ var replace_roman_letters = function (str) {
 
 /* veranlassen, dass die entsprechenden Paragraphen angezeigt werden, wenn Maus über ein Gesetzes-Zitat fährt */
 jQuery(document).ready(function($) {
-	$("body").html('<div id="in" style="border-style:solid;border-width:1px;float:right;height:100%;width:30%;"></div>' + $("body").html());
+	$("body").html('<div id="in" style="border-style:solid;border-width:1px;float:right;height:100%;width:30%;overflow:auto;"></div>' + $("body").html());
 	$("body").html($("body").html().replace(/(Art\.|§§|§)(\W*[0-9]+\W*[IVXL]*\W*(ff\.|f\.|Abs\.|Absatz|S\.|Satz|Nr\.|Nummer)*\W*[,]?\W*)+[A-Z][A-Za-z]+/g, function(data){
 		//console.log(data);
 		return '<span class="paragraph">' + data + '</span>';
@@ -95,21 +95,33 @@ jQuery(document).ready(function($) {
 	});
 });
 
+/* (new XMLSerializer()).serializeToString(txt) -> failed -> aequivalent */
+var serialize = function(node) {
+	if(node.textContent === undefined) str = "";
+	else str = "<"+node.tagName+">"+node.textContent+"</"+node.tagName+">\n";
+	$.each($(node).children(), function(i,c) {
+		str += serialize(c);
+	});
+	return str;
+}
 
 /* Paragraph/Artikel in XML finden und HTML generieren */
 var find_p = function(data, paragraphs) {
 	var str = "";
+	var s = new XMLSerializer();  
 	$.each(paragraphs, function(i,p) {
 		// there is no split() in XPath
 		if(p.istartikel) begstr = "Art "; else begstr = "§ ";
 		//console.log("//enbez[text()='" + begstr + p.paragraph + "']");
 		$.each(xp("//enbez[text()='" + begstr + p.paragraph + "']", data, data), function(j, elem) {
-			str += "§ " + p.paragraph + " ";
+			str += "<h3>";
+			str += begstr + p.paragraph;
 			title = $(xp("../titel", elem, data)).text();
-			if(title != "") str += "&nbsp;&nbsp;<em>" + title + "</em>";
-			str += "<br/><br/>";
-			str += $(xp("../../textdaten", elem, data)).text();
-			str += "<br/><br/>";
+			if(title != "") str += "&nbsp;&nbsp;" + title;
+			str += "</h3>";
+			txt = xp("../../textdaten/text/Content", elem, data);
+			txt = serialize(txt);
+			str += txt + "<br/><br/>";
 		});
 	});
 	$("#in").html(str);
