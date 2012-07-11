@@ -31,7 +31,7 @@ var xp = function(xpath, contextNode, rootDocument) {
 	}
 })(jQuery);
 
-/* Römische Zahlen finden und dersetzen, z.B. I -> Abs. 1 */
+/* Römische Zahlen finden und ersetzen, z.B. I -> Abs. 1 */
 function deromanize(roman) {
 	// source: http://blog.stevenlevithan.com/archives/javascript-roman-numeral-converter
 	var roman = roman.toUpperCase();
@@ -53,6 +53,7 @@ var replace_roman_letters = function (str) {
 
 /* veranlassen, dass die entsprechenden Paragraphen angezeigt werden, wenn Maus über ein Gesetzes-Zitat fährt */
 jQuery(document).ready(function($) {
+	$("body").html('<div id="in" style="border-style:solid;border-width:1px;float:right;height:100%;width:30%;"></div>' + $("body").html());
 	$("body").html($("body").html().replace(/(Art\.|§§|§)(\W*[0-9]+\W*[IVXL]*\W*(ff\.|f\.|Abs\.|Absatz|S\.|Satz|Nr\.|Nummer)*\W*[,]?\W*)+[A-Z][A-Za-z]+/g, function(data){
 		//console.log(data);
 		return '<span class="paragraph">' + data + '</span>';
@@ -63,8 +64,11 @@ jQuery(document).ready(function($) {
 		var gesetz = namen[namen.length-1];
 		var paragraphen = [];
 		$.each(txt.split(","), function(i, p) {
-			var paragraph = {paragraph:null, absatz: null, satz: null, nummer: null, folgende: false};
-			p = p.replace(/(Art\.|§§|§)/, "");
+			var paragraph = {paragraph:null, absatz: null, satz: null, nummer: null, folgende: false, istartikel: false};
+			p = p.replace(/(Art\.|§§|§)/, function(str){
+				paragraph.istartikel = str.search("Art") != -1;
+				return '';
+			});
 			p = p.replace(/(Abs\.|Absatz)\W*[0-9]+/g, function(str){
 				paragraph.absatz = str.match(/[0-9]+/g)[0];
 				return '';
@@ -96,10 +100,17 @@ jQuery(document).ready(function($) {
 /* Paragraph/Artikel in XML finden und HTML generieren */
 var find_p = function(data, paragraphs) {
 	var str = "";
-	$.each(paragraphs, function(i,v) {
-		console.log("//enbez[text()='§ " + v.paragraph + "']");
-		$.each(xp("//enbez[text()='§ " + v.paragraph + "']/../../textdaten", data, data), function(j, txt) {
-			str += "§ " + v.paragraph + "<br />"
+	$.each(paragraphs, function(i,p) {
+		// there is no split() in XPath -> workaround
+		//console.log($(xp("//enbez/text()", data, data)[0]).text());
+		//enbez = xp("//enbez/text()", data, data);
+		//enbez = $(enbez[enbez.length-1]).text().split(" ");
+		//console.log(enbez);
+		var begstr = "§ ";
+		if(p.istartikel) begstr = "Art ";
+		//console.log("//enbez[text()='" + begstr + p.paragraph + "']");
+		$.each(xp("//enbez[text()='" + begstr + p.paragraph + "']/../../textdaten", data, data), function(j, txt) {
+			str += "§ " + p.paragraph + "<br />"
 			str += $(txt).text()
 			str += "<br/><br/>";
 		});
