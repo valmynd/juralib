@@ -5,7 +5,6 @@
  * as published by the Free Software Foundation.
 **/
 
-// TODO: shall work for Art. 3 GG
 // TODO: shall work for §22 II HGB, §24 Abs. 3 GmbHG
 // TODO: handle §21 f. BGB, Art. 9ff. GG (e.g. "show next"- Button (APPEND))
 
@@ -101,17 +100,15 @@ jQuery(document).ready(function($) {
 var find_p = function(data, paragraphs) {
 	var str = "";
 	$.each(paragraphs, function(i,p) {
-		// there is no split() in XPath -> workaround
-		//console.log($(xp("//enbez/text()", data, data)[0]).text());
-		//enbez = xp("//enbez/text()", data, data);
-		//enbez = $(enbez[enbez.length-1]).text().split(" ");
-		//console.log(enbez);
-		var begstr = "§ ";
-		if(p.istartikel) begstr = "Art ";
+		// there is no split() in XPath
+		if(p.istartikel) begstr = "Art "; else begstr = "§ ";
 		//console.log("//enbez[text()='" + begstr + p.paragraph + "']");
-		$.each(xp("//enbez[text()='" + begstr + p.paragraph + "']/../../textdaten", data, data), function(j, txt) {
-			str += "§ " + p.paragraph + "<br />"
-			str += $(txt).text()
+		$.each(xp("//enbez[text()='" + begstr + p.paragraph + "']", data, data), function(j, elem) {
+			str += "§ " + p.paragraph + " ";
+			title = $(xp("../titel", elem, data)).text();
+			if(title != "") str += "&nbsp;&nbsp;<em>" + title + "</em>";
+			str += "<br/><br/>";
+			str += $(xp("../../textdaten", elem, data)).text();
 			str += "<br/><br/>";
 		});
 	});
