@@ -26,6 +26,7 @@ def fetch():
 	content = urlopen(uri+"aktuell.html").read()
 	element = html.fromstring(content)
 	for link in element.xpath("//a[@class = 'alphabet']"):
+		print("... fetching " + link.attrib["href"])
 		content = urlopen(uri+link.attrib["href"]).read()
 		element = html.fromstring(content)
 		xpath_nopdf = "substring(@href, string-length(@href)-3)!='.pdf'" # lxml supports XPath 1.0
@@ -72,12 +73,13 @@ def index():
 	f = open("tmp/index.xml", "w")
 	f.write(xmlstr)
 	f.close()
-
+'''
 write_xml("http://www.gesetze-im-internet.de/alg/xml.zip", "alg") # contains tables
 write_xml("http://www.gesetze-im-internet.de/bgb/xml.zip", "bgb")
 write_xml("http://www.gesetze-im-internet.de/hgb/xml.zip", "hgb")
 write_xml("http://www.gesetze-im-internet.de/gmbhg/xml.zip", "gmbhg")
 write_xml("http://www.gesetze-im-internet.de/aktg/xml.zip", "aktg")
 write_xml("http://www.gesetze-im-internet.de/gg/xml.zip", "gg")
-#fetch()
+'''
+fetch()
 index()
