@@ -113,16 +113,15 @@ var find_p = function(data, paragraphs) {
 		// there is no split() in XPath
 		if(p.istartikel) begstr = "Art "; else begstr = "§ ";
 		//console.log("//enbez[text()='" + begstr + p.paragraph + "']");
-		$.each(xp("//enbez[text()='" + begstr + p.paragraph + "']", data, data), function(j, elem) {
-			str += "<h3>";
-			str += begstr + p.paragraph;
-			title = $(xp("../titel", elem, data)).text();
-			if(title != "") str += "&nbsp;&nbsp;" + title;
-			str += "</h3>";
-			txt = xp("../../textdaten/text/Content", elem, data);
-			txt = serialize(txt);
-			str += txt + "<br/><br/>";
-		});
+		elem = xp("//enbez[text()='" + begstr + p.paragraph + "']", data, data)[0]
+		str += "<h3>";
+		str += begstr + p.paragraph;
+		title = $(xp("../titel", elem, data)).text();
+		if(title != "") str += "&nbsp;&nbsp;" + title;
+		str += "</h3>";
+		txt = xp("../../textdaten/text/Content", elem, data);
+		txt = serialize(txt);
+		str += txt + "<br/><br/>";
 	});
 	$("#in").html(str);
 };
