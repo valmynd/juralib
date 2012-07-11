@@ -5,7 +5,6 @@
  * as published by the Free Software Foundation.
 **/
 
-// TODO: shall work for §22 II HGB, §24 Abs. 3 GmbHG
 // TODO: handle §21 f. BGB, Art. 9ff. GG (e.g. "show next"- Button (APPEND))
 
 /* jQuery XPath wrapper based on a script written by John Firebaugh, see https://github.com/jfirebaugh/jquery-xpath */
@@ -95,7 +94,7 @@ jQuery(document).ready(function($) {
 	});
 });
 
-/* (new XMLSerializer()).serializeToString(txt) -> failed -> aequivalent */
+/* replacement for (new XMLSerializer()).serializeToString(txt) */
 var serialize = function(node) {
 	if(node.textContent === undefined) str = "";
 	else str = "<"+node.tagName+">"+node.textContent+"</"+node.tagName+">\n";
@@ -110,9 +109,7 @@ var find_p = function(data, paragraphs) {
 	var str = "";
 	var s = new XMLSerializer();  
 	$.each(paragraphs, function(i,p) {
-		// there is no split() in XPath
 		if(p.istartikel) begstr = "Art "; else begstr = "§ ";
-		//console.log("//enbez[text()='" + begstr + p.paragraph + "']");
 		elem = xp("//enbez[text()='" + begstr + p.paragraph + "']", data, data)[0]
 		str += "<h3>";
 		str += begstr + p.paragraph;
