@@ -51,7 +51,7 @@ var replace_roman_letters = function (str) {
 
 /* veranlassen, dass die entsprechenden Paragraphen angezeigt werden, wenn Maus über ein Gesetzes-Zitat fährt */
 jQuery(document).ready(function($) {
-	$("body").html('<div id="in" style="border-style:solid;border-width:1px;float:right;height:100%;width:30%;overflow:auto;"></div>' + $("body").html());
+	if(!$("#in").length) $("body").html('<div id="in" style="border-style:solid;border-width:1px;float:right;height:100%;width:30%;overflow:auto;"></div>' + $("body").html());
 	$("body").html($("body").html().replace(/(Art\.|§§|§)(\W*[0-9]+\W*[IVXL]*\W*(ff\.|f\.|Abs\.|Absatz|S\.|Satz|Nr\.|Nummer)*\W*[,]?\W*)+[A-Z][A-Za-z]+/g, function(data){
 		//console.log(data);
 		return '<span class="paragraph">' + data + '</span>';
@@ -85,9 +85,11 @@ jQuery(document).ready(function($) {
 			//console.log(p, paragraph); // there shouldn't be much left
 		});
 		$.get('tmp/index.xml', function(data) {
-			$.each(xp("//keyword[text()='" + gesetz.toLowerCase() + "']/../../filename", data, data), function(i, v) {
-				$.get('tmp/' + $(v).text(), function(data) {
-					find_p(data, paragraphen);
+			$.each(xp("//keyword[text()='" + gesetz.toLowerCase() + "']/../..", data, data), function(i, law) {
+				var filename = xp("./filename", law, data);
+				var title = xp("./title", law, data);
+				$.get('tmp/' + $(filename).text(), function(data) {
+					find_p(data, paragraphen, $(title).text());
 				});
 			});
 		});
@@ -105,8 +107,8 @@ var serialize = function(node) {
 }
 
 /* Paragraph/Artikel in XML finden und HTML generieren */
-var find_p = function(data, paragraphs) {
-	var str = "";
+var find_p = function(data, paragraphs, law_name) {
+	var str = "<h2>" + law_name + "</h2>";
 	var s = new XMLSerializer();  
 	$.each(paragraphs, function(i,p) {
 		if(p.istartikel) begstr = "Art "; else begstr = "§ ";
