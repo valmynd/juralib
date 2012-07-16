@@ -52,7 +52,7 @@ var replace_roman_letters = function (str) {
 /* veranlassen, dass die entsprechenden Paragraphen angezeigt werden, wenn Maus über ein Gesetzes-Zitat fährt */
 jQuery(document).ready(function($) {
 	if(!$("#in").length) $("body").html('<div id="in" style="border-style:solid;border-width:1px;float:right;height:100%;width:30%;overflow:auto;"></div>' + $("body").html());
-	$("body").html($("body").html().replace(/(Art|§§|§)(\W*[0-9]+\W*[IVXL]*\W*(ff|f|Abs|Absatz|S|Satz|Nr|Nummer)*\W*[,]?\W*)+[A-Z][A-Za-z]+/g, function(data){
+	$("body").html($("body").html().replace(/(Art|§§|§)(\W*[0-9]+\W*[IVXL]*\W*(ff|f|Abs|Absatz|S|Satz|Nr|Nummer|Buchst|lit|Buchstabe)*\W*[,]?\W*)+[A-Z][A-Za-z]+/g, function(data){
 		//console.log(data);
 		return '<span class="paragraph">' + data + '</span>';
 	}));
@@ -62,24 +62,28 @@ jQuery(document).ready(function($) {
 		var gesetz = namen[namen.length-1];
 		var paragraphen = [];
 		$.each(txt.split(","), function(i, p) {
-			var paragraph = {paragraph:null, absatz: null, satz: null, nummer: null, folgende: false, istartikel: false};
+			var paragraph = {paragraph:null, absatz: null, satz: null, nummer: null, buchstabe: null, folgende: false, istartikel: false};
 			p = p.replace(/(Art|§§|§)/, function(str){
 				paragraph.istartikel = str.search("Art") != -1;
 				return '';
 			});
-			p = p.replace(/(Abs|Absatz)\W*[0-9]+/g, function(str){
-				paragraph.absatz = str.match(/[0-9]+/g)[0];
+			p = p.replace(/(Abs|Absatz)\W*[0-9]+/, function(str){
+				paragraph.absatz = str.match(/[0-9]+/)[0];
 				return '';
 			});
-			p = p.replace(/(S|Satz)\W*[0-9]+/g, function(str){
-				paragraph.satz = str.match(/[0-9]+/g)[0];
+			p = p.replace(/(S|Satz)\W*[0-9]+/, function(str){
+				paragraph.satz = str.match(/[0-9]+/)[0];
 				return '';
 			});
-			p = p.replace(/(Nr|Nummer)\W*[0-9]+/g, function(str){
-				paragraph.nummer = str.match(/[0-9]+/g)[0];
+			p = p.replace(/(Nr|Nummer)\W*[0-9]+/, function(str){
+				paragraph.nummer = str.match(/[0-9]+/)[0];
 				return '';
 			});
-			paragraph.paragraph = p.match(/[0-9]+/g)[0];
+			p = p.replace(/(Buchst|lit|Buchstabe)\W*[0-9]+/, function(str){
+				paragraph.buchstabe = str.match(/[0-9]+/)[0];
+				return '';
+			});
+			paragraph.paragraph = p.match(/[0-9]+/)[0];
 			paragraph.folgende = /ff|f/.test(p);
 			paragraphen.push(paragraph);
 			//console.log(p, paragraph); // there shouldn't be much left

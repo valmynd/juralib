@@ -3,8 +3,8 @@ from urllib2 import urlopen
 from lxml import etree, html
 from xml.dom import minidom
 
-from zipfile import ZipFile, BadZipfile
 from StringIO import StringIO
+from zipfile import ZipFile
 from os import listdir, path
 
 __author__ = "C.Wilhelm"
@@ -76,13 +76,7 @@ def index():
 	f = open("tmp/index.xml", "w")
 	f.write(xmlstr)
 	f.close()
-'''
-write_xml("http://www.gesetze-im-internet.de/alg/xml.zip", "alg") # contains tables
-write_xml("http://www.gesetze-im-internet.de/bgb/xml.zip", "bgb")
-write_xml("http://www.gesetze-im-internet.de/hgb/xml.zip", "hgb")
-write_xml("http://www.gesetze-im-internet.de/gmbhg/xml.zip", "gmbhg")
-write_xml("http://www.gesetze-im-internet.de/aktg/xml.zip", "aktg")
-write_xml("http://www.gesetze-im-internet.de/gg/xml.zip", "gg")
-'''
-#fetch()
-index()
+
+if __name__ == "__main__":
+	fetch()
+	index()
