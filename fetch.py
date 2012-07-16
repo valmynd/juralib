@@ -54,7 +54,8 @@ def index():
 				titles = set()
 				filename = path.join(subpath, name)
 				dokumente = etree.parse(filename)
-				assert(dtd.validate(dokumente))
+				if not dtd.validate(dokumente):
+					print("WARNING: doesn't validate:", filename)
 				# <!ELEMENT dokumente (norm*)> # Regelfall: erste "Norm" enthält Metadaten für Gesamtdokument, zweite "Norm" enthält Inhaltsverzeichnis
 				firstnorm = dokumente.find("norm")
 				# <!ELEMENT metadaten (jurabk+, amtabk?, ausfertigung-datum?, fundstelle*, kurzue?, langue?, gliederungseinheit?, enbez?, titel?, standangabe*)>
@@ -62,7 +63,9 @@ def index():
 				keywords.update(k.lower() for k in firstnorm.xpath("metadaten/amtabk/text()"))
 				titles.update(firstnorm.xpath("metadaten/langue/text()"))
 				titles.update(firstnorm.xpath("metadaten/titel/text()"))
-				assert(len(titles) == 1) # didn't occur yet, would need to be handled
+				#assert(len(titles) == 1) # didn't occur yet, would need to be handled
+				if len(titles) != 1:
+					print("WARNING: len(titles) != 1:", titles, keywords)
 				law = etree.SubElement(laws, "law")
 				etree.SubElement(law, "title").text = titles.pop()
 				etree.SubElement(law, "filename").text = path.join(pname, name)
@@ -81,5 +84,5 @@ write_xml("http://www.gesetze-im-internet.de/gmbhg/xml.zip", "gmbhg")
 write_xml("http://www.gesetze-im-internet.de/aktg/xml.zip", "aktg")
 write_xml("http://www.gesetze-im-internet.de/gg/xml.zip", "gg")
 '''
-fetch()
+#fetch()
 index()
